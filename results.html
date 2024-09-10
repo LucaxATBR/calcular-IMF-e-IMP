@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/style-results.css">
+    <title>Resultados - IMP e IMF</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Resultados - IMP e IMF</h1>
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Ano</th>
+                    <th>População</th>
+                    <th>Frota</th>
+                    <th>Mortes</th>
+                    <th>IMP (por 100.000)</th>
+                    <th>IMF (por 10.000)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button id="exportBtn">Exportar para Excel</button>
+    </div>
+
+    <canvas id="resultsChart"></canvas>
+
+    <script>
+        // Recupera os dados armazenados no localStorage
+        const formData = JSON.parse(localStorage.getItem('formData'));
+        const results = [];
+        const years = [];
+        const imps = [];
+        const imfs = [];
+
+        for (let i = 1; i <= 5; i++) {
+            const year = formData[`year${i}`];
+            const population = formData[`population${i}`];
+            const fleet = formData[`fleet${i}`];
+            const deaths = formData[`deaths${i}`];
+
+            if (year && population && fleet && deaths) {
+                const imp = (deaths / population) * 100000;
+                const imf = (deaths / fleet) * 10000;
+
+                results.push({
+                    year,
+                    population,
+                    fleet,
+                    deaths,
+                    imp: imp.toFixed(2),
+                    imf: imf.toFixed(2)
+                });
+
+                years.push(year);
+                imps.push(imp.toFixed(2));
+                imfs.push(imf.toFixed(2));
+            }
+        }
+
+        // Exibir resultados na tabela
+        const tableBody = document.querySelector('#resultsTable tbody');
+        results.forEach(result => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${result.year}</td>
+                <td>${result.population}</td>
+                <td>${result.fleet}</td>
+                <td>${result.deaths}</td>
+                <td>${result.imp}</td>
+                <td>${result.imf}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Exibir gráfico
+        const ctx = document.getElementById('resultsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'IMP (por 100.000)',
+                        data: imps,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false
+                    },
+                    {
+                        label: 'IMF (por 10.000)',
+                        data: imfs,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            var table = document.querySelector('table');
+            var wb = XLSX.utils.table_to_book(table, {sheet: "Resultados"});
+            XLSX.writeFile(wb, 'resultados_IMP_IMF.xlsx');
+        });
+    </script>
+
+</body>
+
+</html>

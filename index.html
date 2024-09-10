@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/style.css">
+    <title>Calculadora - IMP e IMF</title>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <body>
+            <div class="container">
+                <h1>Calculadora - IMP e IMF</h1>
+                <form id="calcForm">
+                    <!-- Inputs para Ano, População, Frota e Mortes -->
+                    <div class="year-input">
+                        <label for="year1">Ano 1:</label>
+                        <input type="number" id="year1" name="year1" placeholder="Ano" required>
+                        <input type="number" id="population1" name="population1" placeholder="População" required>
+                        <input type="number" id="fleet1" name="fleet1" placeholder="Frota" required>
+                        <input type="number" id="deaths1" name="deaths1" placeholder="Mortes" required>
+                    </div>
+
+                    <div class="year-input">
+                        <label for="year2">Ano 2:</label>
+                        <input type="number" id="year2" name="year2" placeholder="Ano" required>
+                        <input type="number" id="population2" name="population2" placeholder="População" required>
+                        <input type="number" id="fleet2" name="fleet2" placeholder="Frota" required>
+                        <input type="number" id="deaths2" name="deaths2" placeholder="Mortes" required>
+                    </div>
+
+                    <div class="year-input">
+                        <label for="year3">Ano 3:</label>
+                        <input type="number" id="year3" name="year3" placeholder="Ano" required>
+                        <input type="number" id="population3" name="population3" placeholder="População" required>
+                        <input type="number" id="fleet3" name="fleet3" placeholder="Frota" required>
+                        <input type="number" id="deaths3" name="deaths3" placeholder="Mortes" required>
+                    </div>
+
+                    <div class="year-input">
+                        <label for="year4">Ano 4:</label>
+                        <input type="number" id="year4" name="year4" placeholder="Ano" required>
+                        <input type="number" id="population4" name="population4" placeholder="População" required>
+                        <input type="number" id="fleet4" name="fleet4" placeholder="Frota" required>
+                        <input type="number" id="deaths4" name="deaths4" placeholder="Mortes" required>
+                    </div>
+
+                    <div class="year-input">
+                        <label for="year5">Ano 5:</label>
+                        <input type="number" id="year5" name="year5" placeholder="Ano" required>
+                        <input type="number" id="population5" name="population5" placeholder="População" required>
+                        <input type="number" id="fleet5" name="fleet5" placeholder="Frota" required>
+                        <input type="number" id="deaths5" name="deaths5" placeholder="Mortes" required>
+                    </div>
+
+                    <div class="upload-container">
+                        <label for="fileInput">Importar Dados (Excel):</label>
+                        <input class="btn-import" type="file" id="fileInput" accept=".xlsx, .xls">
+                    </div>
+
+                    <button type="submit">Calcular</button>
+                </form>
+            </div>
+            </form>
+    </div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+<script>
+    document.getElementById('calcForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Captura os dados do formulário
+        const formData = {};
+        for (let i = 1; i <= 5; i++) {
+            formData[`year${i}`] = document.getElementById(`year${i}`).value;
+            formData[`population${i}`] = document.getElementById(`population${i}`).value;
+            formData[`fleet${i}`] = document.getElementById(`fleet${i}`).value;
+            formData[`deaths${i}`] = document.getElementById(`deaths${i}`).value;
+        }
+
+        // Armazena os dados no localStorage
+        localStorage.setItem('formData', JSON.stringify(formData));
+
+        // Redireciona para a página de resultados
+        window.location.href = 'results.html';
+    });
+
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(sheet);
+
+                // Preenche os dados do formulário com o JSON
+                json.forEach((row, index) => {
+                    if (index < 5) { // Limite de 5 anos
+                        document.getElementById(`year${index + 1}`).value = row.Ano;
+                        document.getElementById(`population${index + 1}`).value = row.População;
+                        document.getElementById(`fleet${index + 1}`).value = row.Frota;
+                        document.getElementById(`deaths${index + 1}`).value = row.Mortes;
+                    }
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    });
+</script>
+
+</html>
